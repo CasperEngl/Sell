@@ -1,3 +1,5 @@
+import session from 'express-session'
+import bodyParser from 'body-parser'
 
 export default {
   /*
@@ -60,6 +62,7 @@ export default {
     '@nuxtjs/pwa',
     // Doc: https://github.com/nuxt/content
     '@nuxt/content',
+    '@nuxtjs/auth',
   ],
   /*
   ** Axios module configuration
@@ -77,4 +80,47 @@ export default {
   */
   build: {
   },
+  auth: {
+    strategies: {
+      local: {
+        redirect: {
+          login: '/login',
+          logout: '/',
+          callback: '/login',
+          home: '/dashboard',
+        },
+        endpoints: {
+          login: { url: '/api/auth/login', method: 'post', propertyName: 'token' },
+          logout: { url: '/api/auth/logout', method: 'post' },
+          user: { url: '/api/auth/user', method: 'get', propertyName: 'user' },
+        },
+        cookie: {
+          options: {
+            secure: true,
+          },
+        },
+        // tokenRequired: true,
+        // tokenType: 'bearer',
+        // globalToken: true,
+        // autoFetchUser: true
+      },
+      google: {
+        client_id: process.env.GOOGLE_CLIENT_ID,
+      },
+    },
+  },
+  serverMiddleware: [
+    // body-parser middleware
+    bodyParser.json(),
+    // session middleware
+    session({
+      secret: process.env.SESSION_SECRET,
+      resave: false,
+      saveUninitialized: false,
+      cookie: { maxAge: 60000 },
+    }),
+    // Api middleware
+    // We add /api/login & /api/logout routes
+    '~/api',
+  ],
 }

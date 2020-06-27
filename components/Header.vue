@@ -1,6 +1,6 @@
 <template>
   <nav class="bg-gray-800">
-    <div class="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8">
+    <div class="container">
       <div class="relative flex items-center justify-between h-16">
         <div class="absolute inset-y-0 left-0 flex items-center sm:hidden">
           <!-- Mobile menu button-->
@@ -12,7 +12,7 @@
           >
             <!-- Icon when menu is open. -->
             <svg
-              v-if="open"
+              v-if="nav"
               class="h-6 w-6"
               fill="none"
               viewBox="0 0 24 24"
@@ -42,28 +42,46 @@
             </svg>
           </button>
         </div>
-        <div class="flex-1 flex items-center justify-center sm:items-stretch sm:justify-start">
-          <nuxt-link
-            to="/"
-            class="flex-shrink-0 text-3xl text-white"
-          >
-            Sell
-          </nuxt-link>
+        <div class="flex-1 flex items-center justify-center sm:items-stretch sm:justify-between">
+          <div class="flex items-center">
+            <nuxt-link
+              to="/"
+              class="flex-shrink-0 text-3xl text-white"
+            >
+              Sell
+            </nuxt-link>
+            <nuxt-link
+              to="/"
+              class="mx-5 px-3 py-2 rounded-md text-sm font-medium leading-5 text-gray-300 hover:text-white focus:text-white focus:bg-gray-700 focus:outline-none transition duration-150 ease-in-out"
+            >
+              Home
+            </nuxt-link>
+          </div>
           <div class="hidden sm:flex sm:items-center sm:ml-6">
-            <div class="flex">
+            <div class="flex space-x space-x-2">
               <nuxt-link
-                to="/"
-                class="px-3 py-2 rounded-md text-sm font-medium leading-5 text-white bg-gray-900 focus:outline-none focus:text-white focus:bg-gray-700 transition duration-150 ease-in-out"
+                to="/dashboard"
+                class="px-3 py-2 rounded-md text-sm font-medium leading-5 text-gray-300 hover:text-white focus:text-white focus:bg-gray-700 focus:outline-none transition duration-150 ease-in-out"
               >
-                Homepage
+                Dashboard
+              </nuxt-link>
+              <nuxt-link
+                to="/product/create"
+                class="px-3 py-2 rounded-md bg-green-500 hover:bg-green-400 hover:shadow text-sm font-medium leading-5 text-gray-300 hover:text-white focus:text-white focus:bg-green-400 focus:outline-none transition duration-150 ease-in-out"
+              >
+                Create product
               </nuxt-link>
             </div>
           </div>
         </div>
-        <div class="flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0">
+        <div
+          v-if="$store.state.auth.loggedIn"
+          class="flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0"
+        >
           <button
             class="p-1 border-2 border-transparent text-gray-400 rounded-full hover:text-white focus:outline-none focus:text-white focus:bg-gray-700 transition duration-150 ease-in-out"
             aria-label="Notifications"
+            @click="toggle('notifications')"
           >
             <svg
               class="h-6 w-6"
@@ -85,29 +103,30 @@
             <div>
               <button
                 id="user-menu"
-                class="flex text-sm border-2 border-transparent rounded-full focus:outline-none focus:border-white transition duration-150 ease-in-out"
+                class="flex text-sm border-2 border-transparent rounded-full focus:outline-none focus:border-gray-500 transition duration-150 ease-in-out"
                 aria-label="User menu"
                 aria-haspopup="true"
-                @click="toggle('profileOpen')"
+                @click="toggle('profile')"
               >
                 <img
                   class="h-8 w-8 rounded-full"
-                  src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
-                  alt=""
+                  :src="$store.state.auth.user.picture"
+                  :alt="$store.state.auth.user.name"
+                  @error="handleImageError"
                 >
               </button>
             </div>
 
             <transition
-              enter-class="transition ease-out duration-100"
-              enter-active-class="transform opacity-0 scale-95"
+              enter-active-class="transition ease-out duration-300 origin-top-right"
+              enter-class="transform opacity-0 scale-95"
               enter-to-class="transform opacity-100 scale-100"
-              leave-class="transition ease-in duration-75"
-              leave-active-class="transform opacity-100 scale-100"
+              leave-active-class="transition ease-in duration-150 origin-top-right"
+              leave-class="transform opacity-100 scale-100"
               leave-to-class="transform opacity-0 scale-95"
             >
               <div
-                v-if="profileOpen"
+                v-if="profile"
                 class="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg"
               >
                 <div
@@ -116,24 +135,27 @@
                   aria-orientation="vertical"
                   aria-labelledby="user-menu"
                 >
-                  <a
-                    href="#"
-                    class="block px-4 py-2 text-sm leading-5 text-gray-700 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 transition duration-150 ease-in-out"
+                  <nuxt-link
+                    to="/dashboard"
+                    class="block w-full text-left px-4 py-2 text-sm leading-5 text-gray-700 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 transition duration-150 ease-in-out"
                     role="menuitem"
-                  >Your Profile
-                  </a>
-                  <a
-                    href="#"
-                    class="block px-4 py-2 text-sm leading-5 text-gray-700 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 transition duration-150 ease-in-out"
+                  >
+                    Dashboard
+                  </nuxt-link>
+                  <nuxt-link
+                    to="/settings"
+                    class="block w-full text-left px-4 py-2 text-sm leading-5 text-gray-700 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 transition duration-150 ease-in-out"
                     role="menuitem"
-                  >Settings
-                  </a>
-                  <a
-                    href="#"
-                    class="block px-4 py-2 text-sm leading-5 text-gray-700 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 transition duration-150 ease-in-out"
+                  >
+                    Settings
+                  </nuxt-link>
+                  <button
+                    class="block w-full text-left px-4 py-2 text-sm leading-5 text-gray-700 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 transition duration-150 ease-in-out"
                     role="menuitem"
-                  >Sign out
-                  </a>
+                    @click="$auth.logout()"
+                  >
+                    Sign out
+                  </button>
                 </div>
               </div>
             </transition>
@@ -141,13 +163,10 @@
         </div>
       </div>
     </div>
-
-    <!--
-    Mobile menu, toggle classes based on menu state.
-
-    Menu open: "block", Menu closed: "hidden"
-  -->
-    <div class="hidden sm:hidden">
+    <div
+      v-show="nav"
+      class="sm:hidden"
+    >
       <div class="px-2 pt-2 pb-3">
         <nuxt-link
           to="/"
@@ -164,15 +183,28 @@
 export default {
   name: 'Header',
   data: () => ({
-    open: false,
-    profileOpen: false,
+    nav: false,
+    profile: false,
+    notifications: false,
   }),
   methods: {
-    toggle(menu = 'open') {
+    exists(menu) {
+      if (typeof this[menu] === 'undefined') {
+        alert(`The menu '${menu}' does not exist`)
+      }
+    },
+    toggle(menu = 'nav') {
+      this.exists(menu)
+
       this[menu] = !this[menu]
     },
-    close(menu = 'open') {
+    close(menu = 'nav') {
+      this.exists(menu)
+
       this[menu] = false
+    },
+    handleImageError(e) {
+      e.target.src = `data:image/svg+xml;base64,${btoa('<svg xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="100" fill="white" /></svg>')}`
     },
   },
 }

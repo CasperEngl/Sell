@@ -35,6 +35,7 @@
 
 <script>
 export default {
+  middleware: ['auth'],
   data: () => ({
     name: '',
     price: 0,
@@ -44,5 +45,6 @@ export default {
       console.log(e)
     },
   },
+  layout: 'backend',
 }
 </script>
